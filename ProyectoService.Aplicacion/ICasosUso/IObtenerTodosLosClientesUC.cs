@@ -9,6 +9,6 @@ namespace ProyectoService.Aplicacion.ICasosUso
 {
     public interface IObtenerTodosLosClientesUC
     {
-        List<Cliente> Ejecutar();
+         Task <List<Cliente>> Ejecutar();
     }
 }

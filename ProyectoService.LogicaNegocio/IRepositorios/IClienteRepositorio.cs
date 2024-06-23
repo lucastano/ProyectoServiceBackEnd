@@ -10,7 +10,8 @@ namespace ProyectoService.LogicaNegocio.IRepositorios
     public interface IClienteRepositorio:ICrudRepositorio<Cliente>
     {
        
-        Cliente GetClienteByCi(string ci);
+       Task<Cliente> GetClienteByCi(string ci);
+        
 
 
     }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using ProyectoService.LogicaNegocio.Excepciones;
 
 namespace ProyectoService.AccesoDatos.EntityFramework
 {
@@ -18,37 +19,43 @@ namespace ProyectoService.AccesoDatos.EntityFramework
             _context = context;
 
         }
-        public void Add(Cliente entity)
+        public async Task Add(Cliente entity)
         {
-            //VALIDACIONES
-            //TODO:EXCEPCIONES CLIENTE
-            if (entity.validarCi == null) { throw new Exception("cedula no valida"); }
-            Cliente cliBuscado = GetClienteByCi(entity.Ci);
-            if (cliBuscado != null) { throw new Exception("Cliente ya existe"); }
-            _context.Clientes.Add(cliBuscado);
-            _context.SaveChanges();
+            
+          
+                if (entity.Nombre == null) throw new ClienteException("Debe ingresar nombre de cliente");
+                if (entity.Apellido == null) throw new ClienteException("Debe ingresar apellido de cliente");
+                if (entity.Telefono == null) throw new ClienteException("Debe ingresar telefono de cliente");
+                if (entity.Ci == null)  throw new ClienteException("cedula no valida"); 
+                if (!entity.validarCi())  throw new ClienteException("Número de documento inválido"); 
+                Cliente cliBuscado = await GetClienteByCi(entity.Ci);
+                if (cliBuscado != null)  throw new ClienteException("Cliente ya existe"); 
+                await _context.Clientes.AddAsync(entity);
+                await _context.SaveChangesAsync();
 
         }
 
-        public void Delete(Cliente entity)
+        public async Task Delete(Cliente entity)
         {
             //Eliminar cliente no se hasta donde es valido, ya que el cliente va a tener historicos de servicios 
             throw new NotImplementedException();
         }
 
-        public List<Cliente> getAll()
+        public async Task<List<Cliente>> getAll()
         {
-            return  _context.Clientes.ToList();
+            return  await _context.Clientes.ToListAsync();
             
         }
 
         //PUEDE DEVOLVER NULL
-        public Cliente? GetClienteByCi(string ci)
+        public async Task<Cliente?> GetClienteByCi(string ci)
         {
-            return _context.Clientes.FirstOrDefault(c => c.Ci == ci);
+            if (ci == null) throw new ClienteException("Debe ingresar una ci");
+            
+            return  await _context.Clientes.FirstOrDefaultAsync(c=>c.Ci==ci);
         }
 
-        public void Update(Cliente entity)
+        public async Task Update(Cliente entity)
         {
             throw new NotImplementedException();
         }

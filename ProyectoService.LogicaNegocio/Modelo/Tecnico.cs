@@ -8,5 +8,11 @@ namespace ProyectoService.LogicaNegocio.Modelo
 {
     public class Tecnico:Usuario
     {
+
+        public Tecnico()
+        {
+            this.Rol = "Tecnico";
+        }
+
     }
 }

@@ -8,5 +8,10 @@ namespace ProyectoService.LogicaNegocio.Modelo
 {
     public class Administrador:Usuario
     {
+
+        public Administrador() 
+        {
+            this.Rol = "Administrador";
+        }
     }
 }

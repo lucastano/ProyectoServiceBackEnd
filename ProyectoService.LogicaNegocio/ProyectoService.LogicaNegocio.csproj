@@ -7,8 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="ValueObjects\" />
-    <Folder Include="Validaciones\" />
+    <Compile Remove="Validaciones\**" />
+    <Compile Remove="ValueObjects\**" />
+    <EmbeddedResource Remove="Validaciones\**" />
+    <EmbeddedResource Remove="ValueObjects\**" />
+    <None Remove="Validaciones\**" />
+    <None Remove="ValueObjects\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PDFsharp" Version="6.1.0" />
+    <PackageReference Include="PdfSharpCore" Version="1.3.63" />
   </ItemGroup>
 
 </Project>

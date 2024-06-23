@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProyectoService.LogicaNegocio.Modelo.ValueObjects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,9 +12,10 @@ namespace ProyectoService.LogicaNegocio.Modelo
         public int Id { get; set; }
         public string Nombre { get; set; }
         public string Apellido { get; set; }
-        public string Email { get; set; }
+        public EmailVO Email { get; set; }
         public Byte[] PasswordHash { get; set; }
         public Byte[] PasswordSalt { get; set; }
+        public string Rol {  get; set; }
 
         
 

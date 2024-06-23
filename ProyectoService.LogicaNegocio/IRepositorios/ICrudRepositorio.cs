@@ -9,10 +9,10 @@ namespace ProyectoService.LogicaNegocio.IRepositorios
     public interface ICrudRepositorio <T>
     {
         //CRUD
-        void Add(T entity);
-        void Delete(T entity);
-        void Update(T entity);
-        List<T> getAll();
+         Task Add(T entity);
+        Task Delete(T entity);
+        Task Update(T entity);
+        Task <List<T>> getAll();
 
     }
 }
