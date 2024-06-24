@@ -80,8 +80,9 @@ namespace ProyectoService.AccesoDatos.EntityFramework
         }
         public async Task<Reparacion> Entregar(int id)
         {
-            if (id == 0) throw new ReparacionException("reparacion no existe");
+          
             Reparacion reparacion = await ObtenerReparacionPorId(id);
+            if (reparacion == null) throw new ReparacionException("reparacion no existe");
             if (reparacion.Estado != "Terminada") throw new ReparacionException("Esta reparacion aun no esta terminada");
             reparacion.Entregar();
             await _context.SaveChangesAsync();
@@ -117,8 +118,9 @@ namespace ProyectoService.AccesoDatos.EntityFramework
         public async Task<Reparacion> Terminar(int id, bool reparada)
         {
             //SOLO SE ACEPTAN REPARACIONES ACEPTADAS O NOACEPTADAS
-            if (id == 0) throw new ReparacionException("reparacion no existe");
+            
             Reparacion reparacion = await ObtenerReparacionPorId(id);
+            if (reparacion == null) throw new ReparacionException("Reparacion no existe");
             if(reparacion.Estado=="EnTaller" || reparacion.Estado == "Presupuestada") throw new ReparacionException("Esta reparacion aun no se puede terminar");
             if (reparacion.Estado == "Terminada") throw new ReparacionException("Esta reparacion ya fue terminada");
             if (reparacion.Estado == "Entregada") throw new ReparacionException("Esta reparacion ya fue entregada");

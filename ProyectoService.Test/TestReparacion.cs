@@ -8,6 +8,7 @@ using ProyectoService.LogicaNegocio.IRepositorios;
 using ProyectoService.LogicaNegocio.Modelo;
 using ProyectoService.LogicaNegocio.Modelo.ValueObjects;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -87,11 +88,35 @@ namespace ProyectoService.Test
                 Estado="Presupuestada"
 
             };
+            Reparacion reparacion3 = new Reparacion()
+            {
+                Tecnico = tecnico,
+                Cliente = cliente,
+                Producto = "ps5",
+                NumeroSerie = "21312312",
+                Descripcion = "no prende",
+                Estado = "Aceptada"
 
+            };
+            Reparacion reparacion4 = new Reparacion()
+            {
+                Tecnico = tecnico,
+                Cliente = cliente,
+                Producto = "ps5",
+                NumeroSerie = "21312312",
+                Descripcion = "no prende",
+                Estado = "Terminada"
+
+            };
             _context.Reparaciones.Add(reparacion);
             _context.SaveChanges();
             _context.Reparaciones.Add(reparacion2);
             _context.SaveChanges();
+            _context.Reparaciones.Add(reparacion3);
+            _context.SaveChanges();
+            _context.Reparaciones.Add(reparacion4);
+            _context.SaveChanges();
+
 
         }
 
@@ -540,6 +565,110 @@ namespace ProyectoService.Test
             Assert.IsNull(ex);
 
         }
+        [Test]
+        public async Task ShouldThrowReparacionExceptionTerminarReparacion_WhenInvalidEstadoReparacion()
+        {
+            //ACEPTA REPARACIONES CON ESTADO NOACEPTADAS, ACEPTADAS
+            //SE LE PASA UNA REPARACION CON ESTADO ENTALLER
+            int id = 1;
+            bool reparada = true;
+
+            // Definir los mensajes de error esperados
+            List<string> expectedMessages = new List<string>
+    {
+        "Esta reparacion ya fue terminada",
+        "Esta reparacion aun no se puede terminar",
+        "Esta reparacion ya fue entregada"
+        // Agrega más mensajes de error esperados aquí según sea necesario
+    };
+
+            // Verificar la excepción y el mensaje esperado
+            var ex = Assert.ThrowsAsync<ReparacionException>(async () =>
+            {
+                await _reparacionRepositorio.Terminar(id, reparada);
+            });
+
+            // Verificar que el mensaje de la excepción está entre los mensajes esperados
+            Assert.Contains(ex.Message, expectedMessages);
+
+
+
+
+
+        }
+
+        [Test]
+        public async Task ShouldThrowReparacionExceptionTerminarReparacion_WhenInvalidReparacion()
+        {
+            //SE LE PASE ID DE UNA REPARACION que no existe
+            int id = 1000;
+            bool reparada = true;
+            var ex = Assert.ThrowsAsync<ReparacionException>(async () =>
+            {
+                await _reparacionRepositorio.Terminar(id,reparada);
+            });
+
+            Assert.AreEqual("Reparacion no existe", ex.Message);
+
+        }
+
+        [Test]
+        public async Task ShouldTerminarReparacion()
+        {
+            //SE LE PASE ID DE UNA REPARACION CON UN ESTADO CORRECTO PARA LA FASE DE TERMINAR, RETORNA EL OBJETO
+            int id = 3;
+            bool reparada = true;
+            
+              Reparacion reparacion=  await _reparacionRepositorio.Terminar(id, reparada);
+
+
+            Assert.IsNotNull(reparacion);
+
+        }
+
+        [Test]
+        public async Task ShouldEntregarReparacion()
+        {
+            //SE LE PASE ID DE UNA REPARACION CON UN ESTADO CORRECTO PARA LA FASE DE ENTREGAR, RETORNA EL OBJETO
+            int id = 4;
+            
+
+            Reparacion reparacion = await _reparacionRepositorio.Entregar(id);
+
+
+            Assert.IsNotNull(reparacion);
+
+        }
+
+        [Test]
+        public async Task ShouldThrowReparacionExceptionEntregarReparacion_WhenInvalidReparacion()
+        {
+            //SE LE PASE ID DE UNA REPARACION que no existe
+            int id = 1000;
+            bool reparada = true;
+            var ex = Assert.ThrowsAsync<ReparacionException>(async () =>
+            {
+                await _reparacionRepositorio.Entregar(id);
+            });
+
+            Assert.AreEqual("reparacion no existe", ex.Message);
+
+        }
+        [Test]
+        public async Task ShouldThrowReparacionExceptionEntregarReparacion_WhenInvalidEstado()
+        {
+            //SE LE PASE ID DE UNA REPARACION que no existe
+            int id = 1;
+            bool reparada = true;
+            var ex = Assert.ThrowsAsync<ReparacionException>(async () =>
+            {
+                await _reparacionRepositorio.Entregar(id);
+            });
+
+            Assert.AreEqual("Esta reparacion aun no esta terminada", ex.Message);
+
+        }
+
 
         private byte[] ObtenerSalt()
         {
