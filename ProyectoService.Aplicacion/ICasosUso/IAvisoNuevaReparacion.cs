@@ -9,6 +9,6 @@ namespace ProyectoService.Aplicacion.ICasosUso
 {
     public interface IAvisoNuevaReparacion
     {
-        Task Ejecutar(Reparacion entity);
+        Task<byte[]> Ejecutar(Reparacion entity);
     }
 }

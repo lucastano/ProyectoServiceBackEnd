@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ProyectoService.LogicaNegocio.Excepciones;
+using ProyectoService.LogicaNegocio.Validaciones;
 
 namespace ProyectoService.AccesoDatos.EntityFramework
 {
@@ -24,7 +25,9 @@ namespace ProyectoService.AccesoDatos.EntityFramework
             
           
                 if (entity.Nombre == null) throw new ClienteException("Debe ingresar nombre de cliente");
+                entity.Nombre=ValidacionesTexto.FormatearTexto(entity.Nombre); 
                 if (entity.Apellido == null) throw new ClienteException("Debe ingresar apellido de cliente");
+                entity.Apellido=ValidacionesTexto.FormatearTexto(entity.Apellido);
                 if (entity.Telefono == null) throw new ClienteException("Debe ingresar telefono de cliente");
                 if (entity.Ci == null)  throw new ClienteException("cedula no valida"); 
                 if (!entity.validarCi())  throw new ClienteException("Número de documento inválido"); 
@@ -37,7 +40,7 @@ namespace ProyectoService.AccesoDatos.EntityFramework
 
         public async Task Delete(Cliente entity)
         {
-            //Eliminar cliente no se hasta donde es valido, ya que el cliente va a tener historicos de servicios 
+            
             throw new NotImplementedException();
         }
 
@@ -47,12 +50,18 @@ namespace ProyectoService.AccesoDatos.EntityFramework
             
         }
 
-        //PUEDE DEVOLVER NULL
+        
         public async Task<Cliente?> GetClienteByCi(string ci)
         {
             if (ci == null) throw new ClienteException("Debe ingresar una ci");
             
             return  await _context.Clientes.FirstOrDefaultAsync(c=>c.Ci==ci);
+        }
+
+        public async Task<Cliente> GetClienteById(int id)
+        {
+            if (id == 0) throw new ClienteException("El id es incorrecto");
+            return await _context.Clientes.FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task Update(Cliente entity)

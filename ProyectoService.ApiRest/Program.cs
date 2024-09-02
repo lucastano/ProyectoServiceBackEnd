@@ -4,9 +4,13 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProyectoService.AccesoDatos;
 using ProyectoService.AccesoDatos.EntityFramework;
+using ProyectoService.AccesoDatos.Servicios;
 using ProyectoService.Aplicacion.CasosUso;
 using ProyectoService.Aplicacion.ICasosUso;
 using ProyectoService.LogicaNegocio.IRepositorios;
+using ProyectoService.LogicaNegocio.IServicios;
+using ProyectoService.LogicaNegocio.Servicios;
+using QuestPDF.Infrastructure;
 using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 
@@ -20,7 +24,7 @@ public class Program
         {
             option.UseSqlServer(builder.Configuration.GetConnectionString("ProyectoServiceContext"));
         });
-
+        
         //repositorios 
         builder.Services.AddScoped<IClienteRepositorio, ClienteEFRepositorio>();
         builder.Services.AddScoped<IAuthService, AuthService>();
@@ -28,6 +32,11 @@ public class Program
         builder.Services.AddScoped<IAdministradorRepositorio, AdministradorEFRepositorio>();
         builder.Services.AddScoped<IReparacionRepositorio, ReparacionEFRepositorio>();
         builder.Services.AddScoped<IEnviarEmail,EnviarEmail>();
+        builder.Services.AddScoped<IMensajeriaRepositorio, MensajeriaEFRepositorio>();
+        builder.Services.AddScoped<IUsuarioServicio, UsuarioServicio>();
+        builder.Services.AddScoped<IReparacionServicio,ReparacionServicio>();
+        builder.Services.AddScoped<IProductoRepositorio,ProductoRepositorio>();
+        builder.Services.AddScoped<IBaseFallaRepositorio, BaseFallaEFRepositorio>();
         // casos de uso
         builder.Services.AddScoped<IAgregarClienteUC, AgregarClienteUC>();
         builder.Services.AddScoped<IObtenerTodosLosClientesUC, ObtenerTodosLosClientesUC>();
@@ -44,19 +53,35 @@ public class Program
         builder.Services.AddScoped<IObtenerTodasLasReparaciones,ObtenerTodasLasReparaciones>();
         builder.Services.AddScoped<IObtenerReparacionesPorCliente,ObtenerReparacionesPorCliente>();
         builder.Services.AddScoped<IObtenerReparacionesPorTecnico, ObtenerReparacionesPorTecnico>();
-        builder.Services.AddScoped<IPresupuestarReparacion, PresupuestarReparacion>();
-        builder.Services.AddScoped<IObtenerReparacionesPresupuestadas,ObtenerReparacionesPresupuestadas>();
-        builder.Services.AddScoped<IObtenerReparacionesPresupuestadasPorCliente,ObtenerReparacionesPresupuestadasPorCliente>();
-        builder.Services.AddScoped<IObtenerReparacionesPresupuestadasPorTecnico, ObtenerReparacionesPresupuestadasPorTecnico>();
-        builder.Services.AddScoped<IObtenerReparacionesEnTaller,ObtenerReparacionesEnTaller>();
-        builder.Services.AddScoped<IObtenerReparacionesEnTallerPorCliente, ObtenerReparacionesEnTallerPorCliente>();
-        builder.Services.AddScoped<IObtenerReparacionesEnTallerPorTecnico, ObtenerReparacionesEnTallerPorTecnico>();
+        builder.Services.AddScoped<IGenerarOrdenDeServicio,GenerarOrdenDeServicio>();
+        builder.Services.AddScoped<IObtenerReparacionPorId,ObtenerReparacionPorId>();
+        builder.Services.AddScoped<IPresupuestarReparacion, PresupuestarReparacion>(); 
         builder.Services.AddScoped<IAvisoNuevaReparacion,AvisoNuevaReparacion>();
         builder.Services.AddScoped<IAvisoNuevoPresupuesto,AvisoNuevoPresupuesto>();
+        builder.Services.AddScoped<IAvisoEntregaReparacion, AvisoEntregaReparacion>();
+        builder.Services.AddScoped<IAvisoReparacionTerminada,AvisoReparacionTerminada>();
         builder.Services.AddScoped<IAceptarPresupuesto, AceptarPresupuesto>();
         builder.Services.AddScoped<ITerminarReparacion, TerminarReparacion>();
         builder.Services.AddScoped<IEntregarReparacion,EntregarReparacion>();
         builder.Services.AddScoped<INoAceptarPresupuesto, NoAceptarPresupuesto>();
+        builder.Services.AddScoped<IModificarPresupuestoReparacion, ModificarPresupuestoReparacion>();
+        builder.Services.AddScoped<IModificarDatosReparacion, ModificarDatosReparacion>();
+        builder.Services.AddScoped<INuevoMensaje,NuevoMensaje>();
+        builder.Services.AddScoped<IObtenerMensajes,ObtenerMensajes>();
+        builder.Services.AddScoped<IObtenerClientePorId,ObtenerClientePorId>();
+        builder.Services.AddScoped<IEliminarMensajesReparacion, EliminarMensajesReparacion>();
+        builder.Services.AddScoped<IAgregarProducto, AgregarProducto>();
+        builder.Services.AddScoped<IObtenerProductos, ObtenerProductos>();
+        builder.Services.AddScoped<IObtenerProductoPorId, ObtenerProductoPorId>();
+        builder.Services.AddScoped<IObtenerHistoriaClinica, ObtenerHistoriaClinica>();
+        builder.Services.AddScoped<IObtenerMontoTotalHistoriaClinica, ObtenerMontoTotalHistoriaClinica>();
+        builder.Services.AddScoped<IObtenerBaseFallaSegunDescripcion,ObtenerBaseFallaSegunDescripcion>();
+        builder.Services.AddScoped<IAgregarABaseFallas, AgregarABaseFallas>();
+        builder.Services.AddScoped<IObtenerBaseFallas,ObtenerBaseFallas>();
+        builder.Services.AddScoped<ICambiarPasswordTecnico,CambiarPasswordTecnico>();
+        builder.Services.AddScoped<IAvisoCambioPassword,AvisoCambioPassword>();
+        builder.Services.AddScoped<ICambiarPasswordAdministrador,CambiarPasswordAdministrador>();
+        builder.Services.AddScoped<IObtenerAdministradorPorEmail,ObtenerAdministradorPorEmail>();
         // Add services to the container.
 
         builder.Services.AddControllers();
@@ -111,6 +136,9 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        //app.UseSwagger();
+        //app.UseSwaggerUI();
 
         app.UseHttpsRedirection();
         app.UseCors("nuevaPolitica");

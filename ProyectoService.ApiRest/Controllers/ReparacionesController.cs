@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProyectoService.ApiRest.DTOs;
 using ProyectoService.Aplicacion.CasosUso;
@@ -9,53 +10,80 @@ namespace ProyectoService.ApiRest.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+
     public class ReparacionesController : ControllerBase
     {
         private readonly IAgregarReparacion agregarReparacionUc;
         private readonly IObtenerTodasLasReparaciones obtenerTodasLasReparacionesUc;
-        private readonly IObtenerReparacionesPorCliente obtenerReparacionesPorClienteUc;
-        private readonly IObtenerReparacionesPorCliente obtenerReparacionesPorTecnicoUc;
+        private readonly IObtenerReparacionPorId obtenerReparacionPorIdUc;
         private readonly IPresupuestarReparacion presupuestarReparacionUc;
         private readonly IAgregarClienteUC agregarClienteUc;
         private readonly IObtenerClientePorCI obtenerClientePorCiUc;
         private readonly IObtenerTecnicoPorId obtenerTecnicoPorIdUc;
-        private readonly IObtenerReparacionesPresupuestadas obtenerReparacionesPresupuestadasUc;
-        private readonly IObtenerReparacionesPresupuestadasPorCliente obtenerReparacionesPresupuestadasPorClienteUc;
-        private readonly IObtenerReparacionesPresupuestadasPorTecnico obtenerReparacionesPresupuestadasPorTecnicoUc;
-        private readonly IObtenerReparacionesEnTaller obtenerReparacionesEnTallerUc;
-        private readonly IObtenerReparacionesEnTallerPorCliente obtenerReparacionesEnTallerPorClienteUc;
-        private readonly IObtenerReparacionesEnTallerPorTecnico obtenerReparacionesEnTallerPorTecnicoUc;
         private readonly IAvisoNuevaReparacion avisoNuevaReparacionUc;
         private readonly IAvisoNuevoPresupuesto avisoNuevoPresupuestoUc;
+        private readonly IAvisoEntregaReparacion avisoEntregarReparacionUc;
+        private readonly IAvisoReparacionTerminada avisoReparacionTerminadaUc;
         private readonly IAceptarPresupuesto aceptarPresupuestoUc;
         private readonly INoAceptarPresupuesto noAceptarPresupuestoUc;
         private readonly ITerminarReparacion terminarReparacionUc;
         private readonly IEntregarReparacion entregarReparacionUc;
+        private readonly IModificarPresupuestoReparacion modificarPresupuestoReparacionUc;
+        private readonly IModificarDatosReparacion modificarDatosReparacionUc;
+        private readonly IGenerarOrdenDeServicio generarOrdenDeServicioUc;
+        private readonly IConfiguration configuration;
+        private readonly IEliminarMensajesReparacion eliminarMensajesReparacionUc;
+        private readonly IObtenerHistoriaClinica obtenerHistoriaClinicaUc;
+        private readonly IObtenerMontoTotalHistoriaClinica obtenerMontoTotalHistoriaClinicaUc;
+        private readonly IObtenerProductoPorId obtenerProductoPorIdUc;
+        private readonly IObtenerReparacionesPorCliente obtenerReparacionesPorClienteUc;
+        private Empresa emp;
 
 
 
-
-        public ReparacionesController(IAgregarReparacion agregarReparacionUc, IObtenerTodasLasReparaciones obtenerTodasLasReparacionesUc, IObtenerReparacionesPorCliente obtenerReparacionesPorClienteUc, IObtenerReparacionesPorCliente obtenerReparacionesPorTecnicoUc, IPresupuestarReparacion presupuestarReparacionUc, IObtenerClientePorCI obtenerClientePorCiUc, IObtenerTecnicoPorId obtenerTecnicoPorIdUc, IObtenerReparacionesPresupuestadas obtenerReparacionesPresupuestadasUc, IObtenerReparacionesPresupuestadasPorCliente obtenerReparacionesPresupuestadasPorClienteUc, IObtenerReparacionesPresupuestadasPorTecnico obtenerReparacionesPresupuestadasPorTecnicoUc, IObtenerReparacionesEnTaller obtenerReparacionesEnTallerUc, IObtenerReparacionesEnTallerPorCliente obtenerReparacionesEnTallerPorClienteUc, IObtenerReparacionesEnTallerPorTecnico obtenerReparacionesEnTallerPorTecnicoUc, IAvisoNuevaReparacion avisoNuevaReparacionUc, IAvisoNuevoPresupuesto avisoNuevoPresupuestoUc, IAceptarPresupuesto aceptarPresupuestoUc, INoAceptarPresupuesto noAceptarPresupuestoUc, ITerminarReparacion terminarReparacionUc, IEntregarReparacion entregarReparacionUc)
+        public ReparacionesController(IAgregarReparacion agregarReparacionUc, IObtenerTodasLasReparaciones obtenerTodasLasReparacionesUc,  IObtenerReparacionesPorTecnico obtenerReparacionesPorTecnicoUc, IPresupuestarReparacion presupuestarReparacionUc, IObtenerClientePorCI obtenerClientePorCiUc, IObtenerTecnicoPorId obtenerTecnicoPorIdUc, IAvisoNuevaReparacion avisoNuevaReparacionUc, IAvisoNuevoPresupuesto avisoNuevoPresupuestoUc, IAceptarPresupuesto aceptarPresupuestoUc, INoAceptarPresupuesto noAceptarPresupuestoUc, ITerminarReparacion terminarReparacionUc, IEntregarReparacion entregarReparacionUc, IAvisoEntregaReparacion avisoEntregarReparacionUc, IAvisoReparacionTerminada avisoReparacionTerminadaUc,  IConfiguration configuration, IObtenerReparacionPorId obtenerReparacionPorIdUc, IGenerarOrdenDeServicio generarOrdenDeServicioUc, IModificarPresupuestoReparacion modificarPresupuestoReparacionUc,IModificarDatosReparacion modificarDatosReparacionUc, IEliminarMensajesReparacion eliminarMensajesReparacionUc, IObtenerHistoriaClinica obtenerHistoriaClinicaUc, IObtenerMontoTotalHistoriaClinica obtenerMontoTotalHistoriaClinicaUc,IObtenerProductoPorId obtenerProductoPorIdUc, IObtenerReparacionesPorCliente obtenerReparacionesPorClienteUc)
         {
             this.agregarReparacionUc = agregarReparacionUc;
             this.obtenerTodasLasReparacionesUc = obtenerTodasLasReparacionesUc;
-            this.obtenerReparacionesPorClienteUc = obtenerReparacionesPorClienteUc;
-            this.obtenerReparacionesPorTecnicoUc = obtenerReparacionesPorTecnicoUc;
+            this.obtenerReparacionPorIdUc = obtenerReparacionPorIdUc;
             this.presupuestarReparacionUc = presupuestarReparacionUc;
             this.obtenerClientePorCiUc = obtenerClientePorCiUc;
             this.obtenerTecnicoPorIdUc = obtenerTecnicoPorIdUc;
-            this.obtenerReparacionesPresupuestadasUc = obtenerReparacionesPresupuestadasUc;
-            this.obtenerReparacionesPresupuestadasPorClienteUc = obtenerReparacionesPresupuestadasPorClienteUc;
-            this.obtenerReparacionesPresupuestadasPorTecnicoUc = obtenerReparacionesPresupuestadasPorTecnicoUc;
-            this.obtenerReparacionesEnTallerUc = obtenerReparacionesEnTallerUc;
-            this.obtenerReparacionesEnTallerPorClienteUc = obtenerReparacionesEnTallerPorClienteUc;
-            this.obtenerReparacionesEnTallerPorTecnicoUc = obtenerReparacionesEnTallerPorTecnicoUc;
             this.avisoNuevaReparacionUc = avisoNuevaReparacionUc;
             this.avisoNuevoPresupuestoUc = avisoNuevoPresupuestoUc;
             this.aceptarPresupuestoUc = aceptarPresupuestoUc;
             this.noAceptarPresupuestoUc = noAceptarPresupuestoUc;
             this.terminarReparacionUc = terminarReparacionUc;
             this.entregarReparacionUc = entregarReparacionUc;
+            this.avisoEntregarReparacionUc = avisoEntregarReparacionUc;
+            this.avisoReparacionTerminadaUc = avisoReparacionTerminadaUc;
+            this.modificarPresupuestoReparacionUc = modificarPresupuestoReparacionUc;
+            this.modificarDatosReparacionUc = modificarDatosReparacionUc;
+            this.eliminarMensajesReparacionUc = eliminarMensajesReparacionUc;
+            this.obtenerMontoTotalHistoriaClinicaUc = obtenerMontoTotalHistoriaClinicaUc;
+            this.obtenerHistoriaClinicaUc = obtenerHistoriaClinicaUc;
+            this.obtenerProductoPorIdUc = obtenerProductoPorIdUc;
+            this.obtenerReparacionesPorClienteUc = obtenerReparacionesPorClienteUc;
+            this.configuration = configuration;
+           
+            var configNombreEmpresa = configuration.GetSection("EmpresaSettings:NombreEmpresa").Value!;
+            var configDireccionEmpresa = configuration.GetSection("EmpresaSettings:DireccionEmpresa").Value!;
+            var configTelefonoEmpresa = configuration.GetSection("EmpresaSettings:TelefonoEmpresa").Value!;
+            var configEmail = configuration.GetSection("EmpresaSettings:Email").Value!;
+            var configPassword = configuration.GetSection("EmpresaSettings:EmailPassword").Value!;
+            var configPoliticasEmpresa = configuration.GetSection("EmpresaSettings:PoliticasEmpresa").Value!;
+            Empresa empresaConfig = new Empresa()
+            {
+                Nombre = configNombreEmpresa,
+                Direccion = configDireccionEmpresa,
+                Telefono = configTelefonoEmpresa,
+                Email = configEmail,
+                EmailPassword = configPassword,
+                PoliticasEmpresa= configPoliticasEmpresa
+            };
+            this.emp = empresaConfig;
+            this.generarOrdenDeServicioUc = generarOrdenDeServicioUc;
         }
 
         [HttpPost]
@@ -65,20 +93,17 @@ namespace ProyectoService.ApiRest.Controllers
             if (!ModelState.IsValid) throw new Exception("Debe ingresar datos de la reparacion");
             try
             {
-                //PARA OBTENER EL TECNICO UTILIZO DATOS DE LA SESSION
+                
+                
                 Tecnico tecnico = await obtenerTecnicoPorIdUc.Ejecutar(dto.IdTecnico);
                 if (tecnico == null) throw new Exception("Tecnico no existe");
-                //el ccliente debe existir, en la realidad, no se van a agregar clientes individualmente,
-                //sino que con cada servicio, se ingresan los datos del cliente y ahi se agrega
-                // la idea es al crear un nuevo servicio, ingresar LA CI DEL CLIENTE, lo busca por ci, si encuentra, retorna los datos del cliente.
-                // si no, pide que ingrese los datos, TODO ESO LO MANEJA EL FRONT.
-                // ESTE ENDPOINT REQUIERE QUE EL FRONT, LE DE LA CI DEL CLIENTE EXISTENTE.  
+                
                 Cliente cliente = await obtenerClientePorCiUc.Ejecutar(dto.CiCliente);
                 Reparacion reparacion = new Reparacion()
                 {
                     Tecnico = tecnico,
                     Cliente = cliente,
-                    Producto = dto.Producto,
+                    Producto = await obtenerProductoPorIdUc.Ejecutar(dto.IdProducto),
                     NumeroSerie = dto.NumeroSerie,
                     Descripcion = dto.Descripcion,
                     FechaPromesaPresupuesto=dto.FechaPromesaPresupuesto
@@ -86,9 +111,14 @@ namespace ProyectoService.ApiRest.Controllers
                 };
 
                Reparacion rep= await agregarReparacionUc.Ejecutar(reparacion);
-               await avisoNuevaReparacionUc.Ejecutar(rep);
-                Byte[] pdf = rep.GenerarPdfOrdenServicioEntrada();
-                return Ok();
+               byte []pdf=  await avisoNuevaReparacionUc.Ejecutar(rep);
+               
+                ResponseNuevaReparacionDTO response = new ResponseNuevaReparacionDTO()
+                {
+                    StatusCode = 200,
+                    OrdenDeServicio=pdf
+                };
+                return Ok(response);
 
 
 
@@ -111,7 +141,7 @@ namespace ProyectoService.ApiRest.Controllers
                 if (dto.Id == 0) throw new Exception("No existe reparacion con ese id");
                 if (dto.Descripcion == null) throw new Exception("Debe ingresar una descripcio");
                 Reparacion rep=await presupuestarReparacionUc.Ejecutar(dto.Id,dto.ManoObra,dto.Descripcion,dto.FechaPromesaEntrega);
-                await avisoNuevoPresupuestoUc.Ejecutar(rep);//caso de uso 
+                await avisoNuevoPresupuestoUc.Ejecutar(rep); 
                 return StatusCode(200);    
 
             }
@@ -161,6 +191,7 @@ namespace ProyectoService.ApiRest.Controllers
                 if (id == 0) throw new Exception("Numero de orden incorrecto");
                 Reparacion reparacion = await terminarReparacionUc.Ejecutar(id,reparada);
                 if (reparacion == null) throw new Exception("No se pudo terminar esta reparacion");
+                await avisoReparacionTerminadaUc.Ejecutar(reparacion);
                 return Ok();
             }
             catch (Exception ex)
@@ -180,11 +211,21 @@ namespace ProyectoService.ApiRest.Controllers
                 if (id == 0) throw new Exception("Numero de orden incorrecto");
                 Reparacion reparacion = await entregarReparacionUc.Ejecutar(id);
                 if (reparacion == null) throw new Exception("No se pudo entregar esta reparacion");
-                //aca deberia llamar a reparacion.avisar para enviar orden al cliente
-                return Ok();
+                byte[] pdf=await avisoEntregarReparacionUc.Ejecutar(reparacion);
+                ResponseEntregarReparacionDTO response = new ResponseEntregarReparacionDTO()
+                {
+                    StatusCode = 200,
+                    OrdenDeServicio=pdf
+
+                };
+
+                await eliminarMensajesReparacionUc.Ejecutar(reparacion.Id);
+
+
+                return Ok(response);
             }
             catch (Exception ex)
-            {
+            {    
                 return BadRequest(ex.Message);
 
             }
@@ -206,13 +247,22 @@ namespace ProyectoService.ApiRest.Controllers
                     ClienteDireccion = r.Cliente.Direccion,
                     ClienteEmail = r.Cliente.Email.Value,
                     ClienteCedula=r.Cliente.Ci,
-                    Producto = r.Producto,
+                    TecnicoId = r.Tecnico.Id,
+                    Producto = new ProductoDTO()
+                    {
+                        Id=r.Producto.Id,
+                        Marca=r.Producto.Marca,
+                        Modelo=r.Producto.Modelo,
+                        Version=r.Producto.Version
+                    },
                     NumeroSerie = r.NumeroSerie,
                     Descripcion = r.Descripcion,
                     Fecha = r.Fecha,
                     Estado=r.Estado,
                     DescripcionPresupuesto=r.DescripcionPresupuesto,
-                    Costo=r.CostoFinal
+                    Costo=r.CostoFinal,
+                    FechaPromesaPresupuesto=r.FechaPromesaPresupuesto,
+                    FechaPromesaEntrega=r.FechaPromesaEntrega
                     
                     
 
@@ -239,95 +289,207 @@ namespace ProyectoService.ApiRest.Controllers
 
         }
 
-        [HttpGet("EnTaller")]
-        public async Task<ActionResult<ResponseReparacionesEnTallerDTO>> ObtenerReparacionesEnTaller()
+        [HttpGet("ReparacionesDeClienteCedula")]
+
+        public async Task<ActionResult> ObtenerReparacionesClientePorCedula(string cedula)
         {
             try
             {
-                var reparaciones = await obtenerReparacionesEnTallerUc.Ejecutar();
-                IEnumerable<ReparacionEnTallerDTO> rep = reparaciones.Select(r => new ReparacionEnTallerDTO()
+                if (cedula == "") throw new Exception("Debe ingresar un email");
+                List<Reparacion> reparacionesDeCliente = await obtenerReparacionesPorClienteUc.Ejecutar(cedula);
+                if (!reparacionesDeCliente.Any())
                 {
-                    Id = r.Id,
-                    ClienteNombre = r.Cliente.Nombre,
-                    ClienteApellido = r.Cliente.Apellido,
-                    ClienteTelefono = r.Cliente.Telefono,
-                    ClienteDireccion = r.Cliente.Direccion,
-                    ClienteEmail = r.Cliente.Email.Value,
-                    ClienteCedula = r.Cliente.Ci,
-                    Producto = r.Producto,
-                    NumeroSerie = r.NumeroSerie,
-                    Descripcion = r.Descripcion,
-                    Fecha = r.Fecha
+                    return Ok("No tiene reparaciones");
 
-
-                });
-                ResponseReparacionesEnTallerDTO response = new ResponseReparacionesEnTallerDTO()
+                }
+                else
                 {
-                    StatusCode = 200,
-                    reparaciones = rep.ToList()
+                    IEnumerable<ReparacionEnTallerDTO> rep = reparacionesDeCliente.Select(r => new ReparacionEnTallerDTO()
+                    {
+                        Id = r.Id,
+                        ClienteNombre = r.Cliente.Nombre,
+                        ClienteApellido = r.Cliente.Apellido,
+                        ClienteTelefono = r.Cliente.Telefono,
+                        ClienteDireccion = r.Cliente.Direccion,
+                        ClienteEmail = r.Cliente.Email.Value,
+                        ClienteCedula = r.Cliente.Ci,
+                        TecnicoId = r.Tecnico.Id,
+                        Producto = new ProductoDTO()
+                        {
+                            Id = r.Producto.Id,
+                            Marca = r.Producto.Marca,
+                            Modelo = r.Producto.Modelo,
+                            Version = r.Producto.Version
+                        },
+                        NumeroSerie = r.NumeroSerie,
+                        Descripcion = r.Descripcion,
+                        Fecha = r.Fecha,
+                        Estado = r.Estado,
+                        DescripcionPresupuesto = r.DescripcionPresupuesto,
+                        Costo = r.CostoFinal,
+                        FechaPromesaPresupuesto = r.FechaPromesaPresupuesto,
+                        FechaPromesaEntrega = r.FechaPromesaEntrega
 
-                };
-                return Ok(response);
+
+
+                    });
+                    return Ok(rep);
+
+                }
+
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                ResponseReparacionesEnTallerDTO response = new ResponseReparacionesEnTallerDTO()
-                {
-                    StatusCode = 500,
-                    reparaciones = null
-
-                };
-                return BadRequest(response);
+                return BadRequest(ex.Message);
             }
-
 
         }
 
-        [HttpGet("Presupuestadas")]
-        public async Task<ActionResult<ResponseReparacionesPresupuestadasDTO>> ObtenerReparacionesPresupuestadas()
+        [HttpGet("GenerarOrdenDeServicio")]
+        public async Task<ActionResult>GenerarOrdenDeServicio(int id)
         {
             try
             {
-                var reparaciones = await obtenerReparacionesPresupuestadasUc.Ejecutar();
-                IEnumerable<ReparacionPresupuestadaDTO> rep = reparaciones.Select(r => new ReparacionPresupuestadaDTO()
+                if (id == 0) throw new Exception("Numero de orden incorrecto");
+                Reparacion rep = await obtenerReparacionPorIdUc.Ejecutar(id);
+                byte[]pdf= generarOrdenDeServicioUc.Ejecutar(rep,emp);
+
+                ResponseGenerarOrdenDeServicioDTO response = new ResponseGenerarOrdenDeServicioDTO()
                 {
-                    Id = r.Id,
-                    ClienteNombre = r.Cliente.Nombre,
-                    ClienteApellido = r.Cliente.Apellido,
-                    ClienteTelefono = r.Cliente.Telefono,
-                    ClienteDireccion = r.Cliente.Direccion,
-                    ClienteEmail = r.Cliente.Email.Value,
-                    ClienteCedula = r.Cliente.Ci,
-                    Producto = r.Producto,
-                    NumeroSerie = r.NumeroSerie,
-                    Descripcion = r.Descripcion,
-                    Fecha = r.Fecha,
-                    DescripcionPresupuesto=r.DescripcionPresupuesto,
-                    ManoDeObra=r.ManoDeObra,
-                    CostoFinal=r.CostoFinal
-
-
-                });
-                ResponseReparacionesPresupuestadasDTO response = new ResponseReparacionesPresupuestadasDTO()
-                {
-                    StatusCode = 200,
-                    ReparacionesPresupuestadas = rep.ToList()
-
+                    statusCode = 200,
+                    OrdenDeServicio = pdf,
                 };
-                return Ok(response);
+                return Ok(response); 
             }
             catch (Exception ex)
             {
-                ResponseReparacionesEnTallerDTO response = new ResponseReparacionesEnTallerDTO()
+                return BadRequest(ex.Message);
+
+            }
+        }
+
+        [HttpPut("ModificarPresupuestoReparacion")]
+        public async Task<ActionResult> ModificarPresupuestoReparacion(ModificarPresupuestoReparacionDTO dto)
+        {
+            try
+            {
+                if (dto.Id == 0) throw new Exception("Numero de orden de reparacion incorrecto");
+                Reparacion rep =await modificarPresupuestoReparacionUc.Ejecutar(dto.Id, dto.Costo,dto.Descripcion);
+                ReparacionEnTallerDTO reparacionDTO = new ReparacionEnTallerDTO()
                 {
-                    StatusCode = 500,
-                    reparaciones = null
+                    Id = rep.Id,
+                    ClienteNombre = rep.Cliente.Nombre,
+                    ClienteApellido = rep.Cliente.Apellido,
+                    ClienteTelefono = rep.Cliente.Telefono,
+                    ClienteDireccion = rep.Cliente.Direccion,
+                    ClienteEmail = rep.Cliente.Email.Value,
+                    ClienteCedula = rep.Cliente.Ci,
+                    TecnicoId = rep.Tecnico.Id,
+                    Producto = new ProductoDTO()
+                    {
+                        Id = rep.Producto.Id,
+                        Marca = rep.Producto.Marca,
+                        Modelo = rep.Producto.Modelo,
+                        Version = rep.Producto.Version
+                    },
+                    NumeroSerie = rep.NumeroSerie,
+                    Descripcion = rep.Descripcion,
+                    Fecha = rep.Fecha,
+                    Estado = rep.Estado,
+                    DescripcionPresupuesto = rep.DescripcionPresupuesto,
+                    Costo = rep.CostoFinal,
+                    FechaPromesaPresupuesto = rep.FechaPromesaPresupuesto
 
                 };
-                return BadRequest(response);
+                return Ok(reparacionDTO);
+
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
 
+        }
+        [HttpPut("ModificarDatosReparacion")]
+        public async Task<ActionResult> ModificarDatosReparacion(ModificarDatosReparacionDTO dto)
+        {
+            try
+            {
+                if (dto.Id == 0) throw new Exception("Numero de orden incorrecto");
+                Reparacion rep=await modificarDatosReparacionUc.Ejecutar(dto.Id,dto.FechaPromesaPresupuesto,dto.NumeroSerie,dto.Descripcion);
+                ReparacionEnTallerDTO reparacionDTO = new ReparacionEnTallerDTO()
+                {
+                    Id = rep.Id,
+                    ClienteNombre = rep.Cliente.Nombre,
+                    ClienteApellido = rep.Cliente.Apellido,
+                    ClienteTelefono = rep.Cliente.Telefono,
+                    ClienteDireccion = rep.Cliente.Direccion,
+                    ClienteEmail = rep.Cliente.Email.Value,
+                    ClienteCedula = rep.Cliente.Ci,
+                    TecnicoId = rep.Tecnico.Id,
+                    Producto = new ProductoDTO()
+                    {
+                        Id = rep.Producto.Id,
+                        Marca = rep.Producto.Marca,
+                        Modelo = rep.Producto.Modelo,
+                        Version = rep.Producto.Version
+                    },
+                    NumeroSerie = rep.NumeroSerie,
+                    Descripcion = rep.Descripcion,
+                    Fecha = rep.Fecha,
+                    Estado = rep.Estado,
+                    DescripcionPresupuesto = rep.DescripcionPresupuesto,
+                    Costo = rep.CostoFinal,
+                    FechaPromesaPresupuesto = rep.FechaPromesaPresupuesto
+
+                };
+                return Ok(reparacionDTO);
+
+            }
+            catch( Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
         }
+
+        [HttpGet("HistoriaClinica")]
+
+        public async Task<ActionResult>ObtenerHistoriaClinica(string numeroSerie)
+        {
+            try
+            {
+                if (numeroSerie == null || numeroSerie.Length == 0) throw new Exception("Numero de serie incorrecto");
+                List<Reparacion> reparaciones = await obtenerHistoriaClinicaUc.Ejecutar(numeroSerie);
+                if (reparaciones.Count == 0) throw new Exception("Sin reparaciones realizadas");
+                double montoTotal = await obtenerMontoTotalHistoriaClinicaUc.Ejecutar(numeroSerie);
+                
+                ResponseHistoriaClinicaDTO historiaClinica = new ResponseHistoriaClinicaDTO()
+                {
+                    CantidadReparacionesRealizadas = reparaciones.Count(),
+                    GastoTotalEnReparaciones = montoTotal,
+                    NumeroSerie = numeroSerie,
+                    reparacionesRealizadas = reparaciones.Select(r => new ReparacionHCDTO()
+                    {
+                        FechaEntregaReparacion=r.FechaEntrega,
+                        DescripcionProblema=r.Descripcion,
+                        DescripcionSolucion=r.DescripcionPresupuesto,
+                        CostoReparacion=r.CostoFinal
+                    })
+                     
+
+                };
+                return Ok(historiaClinica);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        
+
+        
     }
 }

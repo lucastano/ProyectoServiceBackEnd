@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace ProyectoService.LogicaNegocio.Modelo
 {
+    
     public class Repuesto
     {
         public int Id { get; set; }

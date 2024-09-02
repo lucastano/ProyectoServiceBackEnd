@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿ using Microsoft.EntityFrameworkCore;
 using ProyectoService.LogicaNegocio.Excepciones;
 using ProyectoService.LogicaNegocio.IRepositorios;
 using ProyectoService.LogicaNegocio.Modelo;
@@ -20,16 +20,13 @@ namespace ProyectoService.AccesoDatos.EntityFramework
            
             
         }
-        //TODO: EN ESTE REPOSITORIO NO SE USA, YA QUE AL HACER EL ADD NECESITO RETORNAR EL ENTITY, Y ESTE METODO AL SER GENERICO NO 
-        // LO DEVUELVE, VER SI LO MEJOR ES HACER QUE EL GENERICO DEVUELVA, ESO LLEVA UN CAMBIO MAS GRANDE
+       
         public async Task Add(Reparacion entity)
         {
             if (entity == null) throw new ReparacionException("Debe ingresar una reparacion");
             if (entity.Cliente == null) throw new ReparacionException("Debe ingresar un cliente");
             if (entity.Descripcion == null) throw new ReparacionException("Debe ingresar una descripcion");
             if (entity.Producto == null) throw new ReparacionException("Debe ingresar un producto");
-            
-            //if (entity.Fecha.) throw new ReparacionException("Debe ingresar una fecha "); ver como comparar con fecha vacia
             if (entity.NumeroSerie == null) throw new ReparacionException("Debe ingresar numero de serie");
             await _context.Reparaciones.AddAsync(entity);
             await _context.SaveChangesAsync();
@@ -63,7 +60,7 @@ namespace ProyectoService.AccesoDatos.EntityFramework
         //todas las reparaciones
         public async Task<List<Reparacion>> getAll()
         {
-            return await _context.Reparaciones.Include(r=>r.Tecnico).Include(r=>r.Cliente).ToListAsync();
+            return await _context.Reparaciones.Include(r=>r.Tecnico).Include(r=>r.Cliente).Include(r=>r.Producto ).ToListAsync();
         }
 
         public async Task<Reparacion> Presupuestar(int id, double ManoObra, string Descripcion,DateTime fechaPromesaEntrega)
@@ -89,7 +86,7 @@ namespace ProyectoService.AccesoDatos.EntityFramework
             return reparacion;
         }
 
-        //TODO:NO NECESITA DEVOLVER NADA, YA QUE NO TENGO QUE IMPRIMIR PDF
+      
         public async Task AceptarPresupuesto(int id)
         {
             
@@ -102,7 +99,7 @@ namespace ProyectoService.AccesoDatos.EntityFramework
             
         }
 
-        //TODO:NO NECESITA DEVOLVER NADA, YA QUE NO TENGO QUE IMPRIMIR PDF
+        
 
         public async Task NoAceptarPresupuesto(int id, double costo,string razon)
         {
@@ -117,7 +114,7 @@ namespace ProyectoService.AccesoDatos.EntityFramework
 
         public async Task<Reparacion> Terminar(int id, bool reparada)
         {
-            //SOLO SE ACEPTAN REPARACIONES ACEPTADAS O NOACEPTADAS
+            
             
             Reparacion reparacion = await ObtenerReparacionPorId(id);
             if (reparacion == null) throw new ReparacionException("Reparacion no existe");
@@ -127,124 +124,107 @@ namespace ProyectoService.AccesoDatos.EntityFramework
             reparacion.Terminar(reparada);
             await _context.SaveChangesAsync();
             return reparacion;
-            //TODO: ACA DEBERIA AVISAR AL CLIENTE
+            
         }
 
 
 
 
-        //todas las reparaciones por cliente
+        
         public async Task<List<Reparacion>> ObtenerReparacionesPorCliente(string Ci)
         {
-            //TODO:CHEQUEAR OBTENERREPARACIONESPORCLIENTE
+            
             List<Reparacion> reparaciones = await getAll();
             return reparaciones.Where(r => r.Cliente.Ci == Ci).ToList();
         }
 
-        //todas las reparaciones por tecnico
+       
         public async Task<List<Reparacion>> ObtenerReparacionesPorTecnico(string EmailTecnico)
         {
-            //TODO:CHEQUEAR ObtenerReparacionesPorTecnico
+            
             List<Reparacion> reparaciones = await getAll();
             return reparaciones.Where(r=>r.Tecnico.Email.Value.Equals(EmailTecnico)).ToList();
         }
 
-        //esta devuelve la reparacion por su id, involuntariamente de su estado
+        
         public async Task<Reparacion> ObtenerReparacionPorId(int id)
         {
             var reparaciones = await getAll();
             return reparaciones.FirstOrDefault(r => r.Id == id);
         }
 
-        public Task Update(Reparacion entity)
+        public async Task Update(Reparacion entity)
         {
-            //SE PUEDE EDITAR COSTO, DESCRIPCION DE REPARACION 
+           
             throw new NotImplementedException();
         }
 
-        //todas las reparaciones presupuestadas
-        public async Task<List<Reparacion>> ObtenerReparacionesPresupuestadas()
+        public byte[] GenerarOrdenDeServicio(Reparacion rep,Empresa emp)
         {
-            var reparaciones = await getAll();
-            return reparaciones.Where(r => r.Estado == "Presupuestada").ToList();
+            if (rep == null) throw new ReparacionException("Reparaicon no existe");
+            byte[] pdf= rep.GenerarOrdenDeServicio(emp);
+            return pdf;
         }
-
-        public async Task<List<Reparacion>> ObtenerReparacionesPresupuestadasPorCliente(string ci)
+       
+        public async Task<Reparacion> ModificarPresupuestoReparacion(int id, double costo, string descripcion)
         {
-            if (ci == null || ci.Any()) throw new ReparacionException("Esta ci no existe o es invalida");
-            var reparaciones = await getAll();
-            return reparaciones.Where(r => r.Estado == "Presupuestada" && r.Cliente.Ci==ci).ToList();
+            Reparacion rep = await ObtenerReparacionPorId(id);
+            if (rep == null) throw new ReparacionException("No existe la reparacion");
+            if (rep.Estado == "Entregada") throw new ReparacionException("Esta reparacion ya fue entregada");
+            if (rep.Estado == "EnTaller") throw new ReparacionException("Esta reparacion aun no esta presupuestada");
+            if (descripcion != string.Empty)
+            {
+                rep.DescripcionPresupuesto = descripcion;
+            }
+            if (costo != 0)
+            {
+                rep.ManoDeObra = costo;
+                rep.CostoFinal = costo;
 
-        }
-
-        public async Task<List<Reparacion>> ObtenerReparacionesPresupuestadasPorTecnico(string EmailTecnico)
-        {
-            if (EmailTecnico == null || EmailTecnico.Any()) throw new ReparacionException("Este email no existe o es invalida");
-            var reparaciones = await  getAll();
-            return reparaciones.Where(r => r.Estado == "Presupuestada" && r.Tecnico.Email.Equals(EmailTecnico)).ToList();
-        }
-
-        //solo reparaciones en taller 
-        public async Task<List<Reparacion>> ObtenerReparacionesEnTaller()
-        {
+            }
             
-             var reparaciones = await getAll();
-            return reparaciones.Where(r => r.Estado == "EnTaller").ToList();
+            await _context.SaveChangesAsync();
+            return rep;
         }
-
-        public async Task<List<Reparacion>> ObtenerReparacionesEnTallerPorCliente(string ci)
+        public async Task<Reparacion> ModificarDatosReparacion(int id ,DateTime fechaPromesaPresupuesto, string numeroSerie,string descripcion)
         {
-            if (ci == null || ci.Any()) throw new ReparacionException("Esta ci no existe o es invalida");
-            var reparaciones = await getAll();
-            return reparaciones.Where(r => r.Estado == "EnTaller" && r.Cliente.Ci == ci).ToList();
+            Reparacion reparacion = await ObtenerReparacionPorId(id);
+            if (reparacion == null)throw new ReparacionException("Esta reparacion no existe");
+            if (reparacion.Estado == "Entregada") throw new ReparacionException("Esta reparacion ya fue entregada");
+            if(fechaPromesaPresupuesto!=DateTime.MinValue && fechaPromesaPresupuesto != DateTime.MaxValue)
+            {
+
+                reparacion.FechaPromesaPresupuesto= fechaPromesaPresupuesto;
+
+            }
+            if(numeroSerie!=string.Empty)
+            {
+                reparacion.NumeroSerie= numeroSerie;
+            }
+            if (descripcion != string.Empty)
+            {
+
+                reparacion.Descripcion= descripcion;
+            }
+            
+            await _context.SaveChangesAsync();
+            return reparacion;
+
         }
 
-        public async Task<List<Reparacion>> ObtenerReparacionesEnTallerPorTecnico(string EmailTecnico)
-        {
-            if (EmailTecnico == null || EmailTecnico.Any()) throw new ReparacionException("Este email no existe o es invalida");
-            var reparaciones = await getAll();
-            return reparaciones.Where(r => r.Estado == "EnTaller" && r.Tecnico.Email.Equals(EmailTecnico)).ToList();
-        }
-
-        
-
-        public async Task<List<Reparacion>> ObtenerReparacionesEntregadas()
-        {
-            var reparaciones = await getAll();
-            return reparaciones.Where(r => r.Estado == "Entregada").ToList();
-        }
-
-        public async Task<List<Reparacion>> ObtenerReparacionesEntregadasPorCliente(string ci)
-        {
-            if (ci == null || ci.Any()) throw new ReparacionException("Esta ci no existe o es invalida");
-            var reparaciones = await getAll();
-            return reparaciones.Where(r => r.Estado == "Entregada" && r.Cliente.Ci == ci).ToList();
-        }
-
-        public async Task<List<Reparacion>> ObtenerReparacionesEntregadasPorTecnico(string EmailTecnico)
-        {
-            if (EmailTecnico == null || EmailTecnico.Any()) throw new ReparacionException("Este email no existe o es invalida");
-            var reparaciones = await getAll();
-            return reparaciones.Where(r => r.Estado == "Entregada" && r.Tecnico.Email.Equals(EmailTecnico)).ToList();
-        }
-
-        public Task<List<Reparacion>> ObtenerReparacionesTerminadas()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<Reparacion>> ObtenerReparacionesTerminadasPorCliente(string ci)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<List<Reparacion>> ObtenerReparacionesTerminadasPorTecnico(string EmailTecnico)
-        {
-            throw new NotImplementedException();
-        }
 
        
+        public async Task<List<Reparacion>> HistoriaClinicaPorNumeroSerie(string numeroSerie)
+        {
+            List<Reparacion>HistoriaClinica= await _context.Reparaciones.Where(r=>r.NumeroSerie==numeroSerie && r.Estado=="Entregada" &&r.Reparada).ToListAsync();
+            return HistoriaClinica;
+        }
 
-     
+        public async Task<double> ObtenerMontoTotalReparaciones(string numeroSerie)
+        {
+            List<Reparacion>reparaciones = await HistoriaClinicaPorNumeroSerie(numeroSerie);
+            double gastoTotal = reparaciones.Sum(r => r.CostoFinal);
+            return gastoTotal;
+        }
     }
 }

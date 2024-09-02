@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "mssql4": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroupName')]/providers/Microsoft.Web/sites/ProyectoServiceApiRest20240901142836/providers/Microsoft.ServiceLinker/linkers/ConnectionStringsProyectoServiceContext2_398BD1A3D6",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/proyectoserviceapirestdbservernestor/databases/ProyectoService.ApiRest_db",
+      "type": "mssql.azure",
+      "connectionId": "ConnectionStrings:ProyectoServiceContext2024"
+    }
+  }
+}

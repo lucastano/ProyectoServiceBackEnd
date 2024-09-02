@@ -9,10 +9,11 @@ namespace ProyectoService.LogicaNegocio.IRepositorios
 {
     public interface IEnviarEmail
     {
-        Task EnviarEmailNuevaReparacion(Reparacion entity);
+        Task<byte[]> EnviarEmailNuevaReparacion(Reparacion entity);
         Task EnviarEmailNuevoPresupuesto(Reparacion entity);
         Task EnviarEmailAvisoTerminada(Reparacion entity);
-        Task EnviarEmailAvisoEntrega(Reparacion entity);
+        Task<byte[]> EnviarEmailAvisoEntrega(Reparacion entity);
+        Task AvisoCambioPassword(Usuario usu,string password);
 
     }
 }

@@ -9,8 +9,10 @@ namespace ProyectoService.LogicaNegocio.IRepositorios
 {
     public interface ITecnicoRepositorio : ICrudRepositorio<Tecnico>
     {
-        Task <Tecnico> ObtenerTecnicoPorEmail(string email);
-        Task<Tecnico> ObtenerTecnicoPorId(int id);
+        Task <Tecnico?> ObtenerTecnicoPorEmail(string email);
+        Task<Tecnico?> ObtenerTecnicoPorId(int id);
+        Task<bool> CambiarPassword(string email, byte[] passwordHash, byte[]passwordSalt);
+        
        
     }
 }

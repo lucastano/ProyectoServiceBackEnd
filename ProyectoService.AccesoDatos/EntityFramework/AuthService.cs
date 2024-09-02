@@ -19,9 +19,9 @@ namespace ProyectoService.AccesoDatos.EntityFramework
             _context = context;
         }
 
-        public async Task<Usuario> Login(string email,string rol)
+        public async Task<Usuario> Login(string emailRecibido,string rol)
         { 
-       
+            string email=emailRecibido.ToLower();
             if(email==null) throw new Exception("Debe ingresar email");
             if (rol == null || (rol!="Tecnico" && rol !="Administrador" && rol !="Cliente")) throw new Exception("debe ingresar un rol de usuario valido");
             Usuario user = null;
@@ -59,5 +59,7 @@ namespace ProyectoService.AccesoDatos.EntityFramework
 
 
         }
+
+       
     }
 }

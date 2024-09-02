@@ -1,11 +1,23 @@
 {
   "dependencies": {
-    "apis1": {
-      "type": "apis"
+    "mssql2": {
+      "type": "mssql",
+      "connectionId": "ConnectionStrings:DbSqlConnection"
     },
     "mssql1": {
       "type": "mssql",
       "connectionId": "ConnectionStrings:connectionBd"
+    },
+    "apis1": {
+      "type": "apis"
+    },
+    "mssql3": {
+      "type": "mssql",
+      "connectionId": "ConnectionStringsdbProyecto"
+    },
+    "mssql4": {
+      "type": "mssql",
+      "connectionId": "ConnectionStrings:ProyectoServiceContext2024"
     }
   }
 }

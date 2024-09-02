@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using ProyectoService.LogicaNegocio.IRepositorios;
 
 namespace ProyectoService.Test
 {
@@ -89,7 +90,7 @@ namespace ProyectoService.Test
         {
             var ex = Assert.Throws<Exception>(() =>
             {
-                Administrador tecnico = new Administrador
+                Administrador admin = new Administrador
                 {
                     Nombre = "Roberto",
                     Apellido = "Gonzalez",
@@ -101,6 +102,59 @@ namespace ProyectoService.Test
             });
 
             Assert.AreEqual("Email no valido", ex.Message);
+        }
+        //COMIENZA CAMBIO PASSWORD
+        [Test]
+        public async Task ChangePassword_ShouldUpdatePassword()
+        {
+            string emailAdministrador = "juan@example.com";
+            string nuevaPassword = "Pr1234567";
+            byte[] salt = ObtenerSalt();
+            byte[] hash = ObtenerHash(nuevaPassword, salt);
+
+            bool resultado = await _administradorRepositorio.CambiarPassword(emailAdministrador, hash, salt);
+
+            Assert.True(resultado);
+        }
+
+        [Test]
+        public async Task ChangePassword_ShouldReturnFalseWhenPasswordEmpty()
+        {
+            string emailAdministrador = "juan@example.com";
+            //se le pasa salt y hash null, ya que la funcion los requiere
+            byte[] salt = null;
+            byte[] hash = null;
+            bool resultado = await _administradorRepositorio.CambiarPassword(emailAdministrador, hash, salt);
+            //debe retornar false
+            Assert.False(resultado);
+        }
+
+        [Test]
+        public async Task ChangePassword_ShouldReturnFalseWhenEmailEmpty()
+        {
+            //se le pasa todos los datos bien menos el email del tecnico
+            string emailAdministrador = "";
+            string nuevaPassword = "Pr1234567";
+
+            //se le pasa salt y hash null, ya que la funcion los requiere
+            byte[] salt = ObtenerSalt();
+            byte[] hash = ObtenerHash(nuevaPassword, salt);
+            bool resultado = await _administradorRepositorio.CambiarPassword(emailAdministrador, hash, salt);
+            //debe retornar false
+            Assert.False(resultado);
+        }
+        [Test]
+        public async Task ChangePassword_ShouldReturnFalseWhenAdministradorNull()
+        {
+            //se le pasa todos los datos bien menos el email del tecnico, ese tecnico no existe
+            string emailAdministrador = "ddd@gmail.com"; //tecnico es null porque no encuentra el tecnico con ese correo
+            string nuevaPassword = "Pr1234567";
+            //se le pasa salt y hash null, ya que la funcion los requiere
+            byte[] salt = ObtenerSalt();
+            byte[] hash = ObtenerHash(nuevaPassword, salt);
+            bool resultado = await _administradorRepositorio.CambiarPassword(emailAdministrador, hash, salt);
+            //debe retornar false
+            Assert.False(resultado);
         }
 
 

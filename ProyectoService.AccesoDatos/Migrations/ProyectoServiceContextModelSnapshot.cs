@@ -17,14 +17,14 @@ namespace ProyectoService.AccesoDatos.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.5")
+                .HasAnnotation("ProductVersion", "8.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.HasSequence("UsuarioSequence");
 
-            modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.Empresa", b =>
+            modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.BaseFalla", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -32,29 +32,85 @@ namespace ProyectoService.AccesoDatos.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Direccion")
+                    b.Property<string>("Falla")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Foto")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Telefono")
+                    b.Property<string>("Solucion")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Empresas");
+                    b.HasIndex("ProductoId");
+
+                    b.ToTable("baseFallas");
+                });
+
+            modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.Mensaje", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DestinatarioId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmisorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaHoraEnvio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReparacionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DestinatarioId");
+
+                    b.HasIndex("EmisorId");
+
+                    b.HasIndex("ReparacionId");
+
+                    b.ToTable("mensajes");
+                });
+
+            modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.Producto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Marca")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Modelo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "Marca", "Modelo", "Version" }, "IX_Producto_Marca_Modelo_Version")
+                        .IsUnique();
+
+                    b.ToTable("productos");
                 });
 
             modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.Reparacion", b =>
@@ -105,9 +161,8 @@ namespace ProyectoService.AccesoDatos.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Producto")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("ProductoId")
+                        .HasColumnType("int");
 
                     b.Property<string>("RazonNoAceptada")
                         .IsRequired()
@@ -123,9 +178,11 @@ namespace ProyectoService.AccesoDatos.Migrations
 
                     b.HasIndex("ClienteId");
 
+                    b.HasIndex("ProductoId");
+
                     b.HasIndex("TecnicoId");
 
-                    b.ToTable("Reparaciones");
+                    b.ToTable("reparaciones");
                 });
 
             modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.Usuario", b =>
@@ -172,7 +229,7 @@ namespace ProyectoService.AccesoDatos.Migrations
                 {
                     b.HasBaseType("ProyectoService.LogicaNegocio.Modelo.Usuario");
 
-                    b.ToTable("Administradores", (string)null);
+                    b.ToTable("administradores", (string)null);
                 });
 
             modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.Cliente", b =>
@@ -181,7 +238,7 @@ namespace ProyectoService.AccesoDatos.Migrations
 
                     b.Property<string>("Ci")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Direccion")
                         .IsRequired()
@@ -191,14 +248,56 @@ namespace ProyectoService.AccesoDatos.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("Clientes", (string)null);
+                    b.HasIndex(new[] { "Ci" }, "IX_Cliente_Ci")
+                        .IsUnique()
+                        .HasFilter("[Ci] IS NOT NULL");
+
+                    b.ToTable("clientes", (string)null);
                 });
 
             modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.Tecnico", b =>
                 {
                     b.HasBaseType("ProyectoService.LogicaNegocio.Modelo.Usuario");
 
-                    b.ToTable("Tecnicos", (string)null);
+                    b.ToTable("tecnicos", (string)null);
+                });
+
+            modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.BaseFalla", b =>
+                {
+                    b.HasOne("ProyectoService.LogicaNegocio.Modelo.Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.Mensaje", b =>
+                {
+                    b.HasOne("ProyectoService.LogicaNegocio.Modelo.Usuario", "Destinatario")
+                        .WithMany()
+                        .HasForeignKey("DestinatarioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProyectoService.LogicaNegocio.Modelo.Usuario", "Emisor")
+                        .WithMany()
+                        .HasForeignKey("EmisorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProyectoService.LogicaNegocio.Modelo.Reparacion", "Reparacion")
+                        .WithMany("Mensajes")
+                        .HasForeignKey("ReparacionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Destinatario");
+
+                    b.Navigation("Emisor");
+
+                    b.Navigation("Reparacion");
                 });
 
             modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.Reparacion", b =>
@@ -206,6 +305,12 @@ namespace ProyectoService.AccesoDatos.Migrations
                     b.HasOne("ProyectoService.LogicaNegocio.Modelo.Cliente", "Cliente")
                         .WithMany()
                         .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProyectoService.LogicaNegocio.Modelo.Producto", "Producto")
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -217,7 +322,14 @@ namespace ProyectoService.AccesoDatos.Migrations
 
                     b.Navigation("Cliente");
 
+                    b.Navigation("Producto");
+
                     b.Navigation("Tecnico");
+                });
+
+            modelBuilder.Entity("ProyectoService.LogicaNegocio.Modelo.Reparacion", b =>
+                {
+                    b.Navigation("Mensajes");
                 });
 #pragma warning restore 612, 618
         }

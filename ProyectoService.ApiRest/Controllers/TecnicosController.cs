@@ -11,21 +11,28 @@ namespace ProyectoService.ApiRest.Controllers
     [Route("api/[controller]")]
     [ApiController]
     
+
+
     public class TecnicosController : ControllerBase
     {
         private readonly IAgregarTecnico agregarTecnicoUc;
         private readonly IObtenerTodosLosTecnicos obtenerTodosLosTecnicosUc;
         private readonly IObtenerTecnicoPorEmail obtenerTecnicoPorEmailUc;
         private readonly IValidarPassword validarPasswordUc;
+        private readonly ICambiarPasswordTecnico cambiarPasswordTecnicoUc;
+        private readonly IAvisoCambioPassword avisoCambioPasswordUc;
 
-        public TecnicosController(IAgregarTecnico agregarTecnicoUc, IObtenerTodosLosTecnicos obtenerTodosLosTecnicosUc, IObtenerTecnicoPorEmail obtenerTecnicoPorEmailUc, IValidarPassword validarPasswordUc)
+        public TecnicosController(IAgregarTecnico agregarTecnicoUc, IObtenerTodosLosTecnicos obtenerTodosLosTecnicosUc, IObtenerTecnicoPorEmail obtenerTecnicoPorEmailUc, IValidarPassword validarPasswordUc, ICambiarPasswordTecnico cambiarPasswordTecnicoUc, IAvisoCambioPassword avisoCambioPasswordUc)
         {
             this.agregarTecnicoUc = agregarTecnicoUc;
             this.obtenerTodosLosTecnicosUc = obtenerTodosLosTecnicosUc;
             this.obtenerTecnicoPorEmailUc = obtenerTecnicoPorEmailUc;
             this.validarPasswordUc = validarPasswordUc;
-        }
+            this.cambiarPasswordTecnicoUc = cambiarPasswordTecnicoUc;
+            this.avisoCambioPasswordUc = avisoCambioPasswordUc;
 
+        }
+        [Authorize]
         [HttpPost]
 
         public async Task<ActionResult<ResponseAgregarTecnicoDTO>> AgregarTecnico(AgregarTecnicoDTO dto)
@@ -70,9 +77,58 @@ namespace ProyectoService.ApiRest.Controllers
             }
 
         }
+        [HttpPut("RecuperarPasswordTecnico")]
+        public async Task<ActionResult> RecuperarPassword(string email)
+        {
 
+            try
+            {
+                if (email == null) throw new Exception("Debe ingresar email de tecnico");
+                Tecnico tecnico = await obtenerTecnicoPorEmailUc.Ejecutar(email);
+                if (tecnico == null) throw new Exception("No existe un tecnico con ese Email");
+                string passwordRandom = Seguridad.GenerarPasswordRandom();
+                Seguridad.CrearPasswordHash(passwordRandom, out byte[] passwordHash, out byte[] passwordSalt);
+                bool response = await cambiarPasswordTecnicoUc.Ejecutar(email, passwordHash, passwordSalt);
+                if (!response) throw new Exception("No se pudo cambiar contraseña");
+                await avisoCambioPasswordUc.Ejecutar(tecnico, passwordRandom);
+                return Ok();
+
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+
+        }
+
+        [Authorize]
+        [HttpPut("CambiarPassword")]
+        public async Task<ActionResult> CambiarPassword(string email, string nuevoPassword)
+        {
+            try
+            {
+                if (email == null) throw new Exception("Debe ingresar email de tecnico");
+                if (nuevoPassword == "") throw new Exception("Debe ingresar la nueva contraseña");
+                if (!validarPasswordUc.Ejecutar(nuevoPassword)) throw new Exception("El formato de la contraseña no es correcto");
+                Tecnico tecnico = await obtenerTecnicoPorEmailUc.Ejecutar(email);
+                if (tecnico == null) throw new Exception("No existe un tecnico con ese Email");
+                Seguridad.CrearPasswordHash(nuevoPassword, out byte[] passwordHash, out byte[] passwordSalt);
+                bool response = await cambiarPasswordTecnicoUc.Ejecutar(email, passwordHash, passwordSalt);
+                if (!response) throw new Exception("No se pudo cambiar contraseña");
+                return Ok();
+
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [Authorize]
         [HttpGet]
-
         public async  Task<ActionResult<ResponseObtenerTecnicosDTO>> ObtenerTecnicos()
         {
             try

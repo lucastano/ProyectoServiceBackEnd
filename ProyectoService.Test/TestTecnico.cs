@@ -103,6 +103,59 @@ namespace ProyectoService.Test
             Assert.AreEqual("Email no valido", ex.Message);
         }
 
+        [Test]
+        public async Task ChangePassword_ShouldUpdatePassword()
+        {
+            string emailTecnico = "juan@example.com";
+            string nuevaPassword = "Pr1234567";
+            byte[]salt=ObtenerSalt();
+            byte[]hash=ObtenerHash(nuevaPassword, salt);
+
+            bool resultado = await _tecnicoRepositorio.CambiarPassword(emailTecnico, hash, salt);
+            
+            Assert.True(resultado);
+        }
+
+        [Test]
+        public async Task ChangePassword_ShouldReturnFalseWhenPasswordEmpty()
+        {
+            string emailTecnico = "juan@example.com";
+            //se le pasa salt y hash null, ya que la funcion los requiere
+            byte[] salt = null;
+            byte[] hash = null;
+            bool resultado = await _tecnicoRepositorio.CambiarPassword(emailTecnico, hash, salt);
+            //debe retornar false
+            Assert.False(resultado);
+        }
+
+        [Test]
+        public async Task ChangePassword_ShouldReturnFalseWhenEmailEmpty()
+        {
+            //se le pasa todos los datos bien menos el email del tecnico
+            string emailTecnico = "";
+            string nuevaPassword = "Pr1234567";
+
+            //se le pasa salt y hash null, ya que la funcion los requiere
+            byte[] salt = ObtenerSalt();
+            byte[] hash = ObtenerHash(nuevaPassword, salt);
+            bool resultado = await _tecnicoRepositorio.CambiarPassword(emailTecnico, hash, salt);
+            //debe retornar false
+            Assert.False(resultado);
+        }
+        [Test]
+        public async Task ChangePassword_ShouldReturnFalseWhenTecnicoNull()
+        {
+            //se le pasa todos los datos bien menos el email del tecnico, ese tecnico no existe
+            string emailTecnico = "ddd@gmail.com"; //tecnico es null porque no encuentra el tecnico con ese correo
+            string nuevaPassword = "Pr1234567";
+            //se le pasa salt y hash null, ya que la funcion los requiere
+            byte[] salt = ObtenerSalt();
+            byte[] hash = ObtenerHash(nuevaPassword, salt);
+            bool resultado = await _tecnicoRepositorio.CambiarPassword(emailTecnico, hash, salt);
+            //debe retornar false
+            Assert.False(resultado);
+        }
+
 
 
 
